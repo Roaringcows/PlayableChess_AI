@@ -3,7 +3,7 @@ This is our main driver file. It will be responsible for handling user input and
 """
 
 import pygame as p
-import ChessEngine
+import ChessEngine, ChessAi #enpassanting as former pin against another pin
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8 #dimensions of a chess board are 8x8
@@ -37,13 +37,16 @@ def main():
     sqSelected = () #no square is selected, keep track of the last click of the user (tuple: (row, col))
     playerClicks = [] #keep track of players clicks (two tuples: [(6,4), (4,4)])
     gameOver = False
+    playerOne = False #IF a human is playing white, then this will be True. If an AI is playing, then false.
+    playerTwo = False #^Same as aboe but for black
     while running:
+        humanTurn = (gs.whiteToMove and playerOne) or (not gs.whiteToMove and playerTwo)
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             #mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
-                if not  gameOver:
+                if not  gameOver and humanTurn:
                     location = p.mouse.get_pos() #(x, y) location of mouse
                     col = location[0]//SQ_SIZE
                     row = location[1]//SQ_SIZE
@@ -78,6 +81,15 @@ def main():
                     playerClicks = []
                     moveMade = False
                     animate = False
+        
+        #AI Move finder
+        if not gameOver and not humanTurn:
+            AIMove = ChessAi.findBestMove(gs, validMoves)
+            if AIMove is None:
+                AIMove = ChessAi.findRandomMove(validMoves)
+            gs.makeMove(AIMove)
+            moveMade = True
+            animate = True
 
         if moveMade:
             if animate:
@@ -123,7 +135,7 @@ def highlightSquares(screen, gs, validMoves, sqSelected, moveLog):
                         a.fill(p.Color('red'))
                         screen.blit(a, (move.endCol*SQ_SIZE, move.endRow*SQ_SIZE))
                     else: screen.blit(s, (move.endCol*SQ_SIZE, move.endRow*SQ_SIZE))
-    if moveLog != []:
+    if moveLog != []:   #display last move done
         move = moveLog[-1]
         z = p.Surface((SQ_SIZE, SQ_SIZE))
         z.set_alpha(100) #transperancy value -> 0 transparent; 255 opaque

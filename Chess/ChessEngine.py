@@ -520,6 +520,18 @@ class GameState():
                     self.blackCastleQueenside = False
                 elif move.startCol == 7: #right rook
                     self.blackCastleKingside = False
+        elif move.pieceCaptured == 'wR':
+            if move.endRow == 7:
+                if move.endCol == 0:
+                    self.whiteCastleQueenside = False
+                elif move.endCol == 7:
+                    self.whiteCastleKingside = False
+        elif move.pieceCaptured == 'bR':
+            if move.endRow == 0:
+                if move.endCol == 0:
+                    self.blackCastleQueenside = False
+                elif move.endCol == 7:
+                    self.blackCastleKingside = False
 
 class CastleRights():
     def __init__(self, wks, bks, wqs, bqs):
