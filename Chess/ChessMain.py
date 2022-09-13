@@ -37,8 +37,8 @@ def main():
     sqSelected = () #no square is selected, keep track of the last click of the user (tuple: (row, col))
     playerClicks = [] #keep track of players clicks (two tuples: [(6,4), (4,4)])
     gameOver = False
-    playerOne = False #IF a human is playing white, then this will be True. If an AI is playing, then false.
-    playerTwo = False #^Same as aboe but for black
+    playerOne = True #IF a human is playing white, then this will be True. If an AI is playing, then false.
+    playerTwo = True #^Same as aboe but for black
     while running:
         humanTurn = (gs.whiteToMove and playerOne) or (not gs.whiteToMove and playerTwo)
         for e in p.event.get():
@@ -86,7 +86,7 @@ def main():
 
         #AI Move finder
         if not gameOver and not humanTurn:
-            AIMove = ChessAi.findBestMoveMinMax(gs, validMoves)
+            AIMove = ChessAi.findBestMove(gs, validMoves)
             if AIMove is None:
                 AIMove = ChessAi.findRandomMove(validMoves)
             gs.makeMove(AIMove)
@@ -194,6 +194,9 @@ def animateMove(move, screen, board, clock):
         p.draw.rect(screen, color, endSquare)
         #draw captured piece onto rectangle
         if move.pieceCaptured != '--':
+            if move.isEnpassantMove:
+                enPassantRow = (move.endRow + 1) if move.pieceCaptured[0] == 'b' else move.endRow - 1
+                endSquare = p.Rect(move.endCol*SQ_SIZE, enPassantRow*SQ_SIZE, SQ_SIZE, SQ_SIZE)
             screen.blit(IMAGES[move.pieceCaptured], endSquare)
         #draw moving piece
         screen.blit(IMAGES[move.pieceMoved], p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))

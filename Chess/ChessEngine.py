@@ -2,9 +2,7 @@
 This class is reponsible for the storing all the info about the current state of a chess game. It will also be 
  responsible for determining the valid moves at the current state. It will also keep a move log.
 """
-
 class GameState():
-
 
     def __init__(self):
         #board is an 8x8 2d list, each element of the list has 2 charachters.
@@ -33,13 +31,13 @@ class GameState():
         self.checkMate = False
         self.staleMate = False
         self.enpassantPossible = () #coordinates for the square where enpassant capture is possible
+        self.enpassantPossibleLog = [self.enpassantPossible]
         #castling rights
         self.whiteCastleKingside = True
         self.whiteCastleQueenside = True
         self.blackCastleKingside = True
         self.blackCastleQueenside = True
-        self.castleRightsLog = [CastleRights(self.whiteCastleKingside, self.blackCastleKingside, self.whiteCastleQueenside, self.blackCastleQueenside)]
-
+        self.castleRightsLog = [CastleRights(self.whiteCastleKingside, self.blackCastleKingside, self.whiteCastleQueenside, self.blackCastleQueenside)] #39
     '''
     Takes a Move as a parameter and executes it (will not work for castling, pawn promotion, and en-passant)
     '''
@@ -60,16 +58,12 @@ class GameState():
         #enpassant move
         if move.isEnpassantMove:
             self.board[move.startRow][move.endCol] = '--' #capturing the pawn
-        #update enpassantPossible variable
+        #if pawn moves twice, next move can capture enpassant
         if move.pieceMoved[1] == 'p' and abs(move.startRow - move.endRow) == 2: #only on 2 square pawn advances
             self.enpassantPossible = ((move.startRow + move.endRow)//2, move.startCol)
         else:
             self.enpassantPossible = ()
-        #update castling rights - whenever it is a rook or a king move
-        self.updateCastleRights(move)
-        self.castleRightsLog.append(CastleRights(self.whiteCastleKingside, self.blackCastleKingside, self.whiteCastleQueenside, self.blackCastleQueenside))
-
-
+        
         #castle moves
         if move.castle:
             if move.endCol - move.startCol == 2: #kingside
@@ -79,6 +73,12 @@ class GameState():
                 self.board[move.endRow][move.endCol + 1] = self.board[move.endRow][move.endCol - 2] #move rook
                 self.board[move.endRow][move.endCol - 2] = '--' #empty space where rook was
 
+
+        self.enpassantPossibleLog.append(self.enpassantPossible)
+
+        #update castling rights - whenever it is a rook or a king move
+        self.updateCastleRights(move)
+        self.castleRightsLog.append(CastleRights(self.whiteCastleKingside, self.blackCastleKingside, self.whiteCastleQueenside, self.blackCastleQueenside))
 
 
     '''
@@ -99,10 +99,9 @@ class GameState():
             if move.isEnpassantMove:
                 self.board[move.endRow][move.endCol] = '--' #leave landing square blank
                 self.board[move.startRow][move.endCol] = move.pieceCaptured
-                self.enpassantPossible = (move.endRow, move.endCol)
-            #undo a 2 square pawn advance
-            if move.pieceMoved[1] == 'p' and abs(move.startRow - move.endRow) == 2:
-                self.enpassantPossible = ()
+            
+            self.enpassantPossibleLog.pop()
+            self.enpassantPossible = self.enpassantPossibleLog[-1]
             
             #give back castling right if move took them away
             self.castleRightsLog.pop() #get rid of new castle rights from move we are undoing
@@ -525,6 +524,8 @@ class GameState():
                     self.blackCastleQueenside = False
                 elif move.startCol == 7: #right rook
                     self.blackCastleKingside = False
+
+        #if a rook is captured
         elif move.pieceCaptured == 'wR':
             if move.endRow == 7:
                 if move.endCol == 0:
