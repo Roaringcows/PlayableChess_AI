@@ -202,6 +202,7 @@ class GameState():
                 break
         
         if self.whiteToMove: #white pawn moves
+            kingRow, kingCol = self.whiteKingLocation
             if self.board[r-1][c] == "--": #1 square pawn advance
                 if not piecePinned or pinDirection == (-1, 0):
                     moves.append(Move((r, c), (r-1, c), self.board))
@@ -209,21 +210,58 @@ class GameState():
                         moves.append(Move((r, c), (r-2, c), self.board))
             #captures
             if c-1 >= 0: #captures to the left
-                if self.board[r-1][c-1][0] == 'b': #enemy piece to capture
-                    if not piecePinned or pinDirection == (-1, -1):
+                if not piecePinned or pinDirection == (-1, -1):
+                    if self.board[r-1][c-1][0] == 'b': #enemy piece to capture
                         moves.append(Move((r, c), (r-1, c-1), self.board))
-                elif (r-1, c-1) == self.enpassantPossible:
-                    if not piecePinned or pinDirection == (-1, -1):
-                        moves.append(Move((r, c), (r-1, c-1), self.board, isEnpassantMove=True))
+                    if (r-1, c-1) == self.enpassantPossible:
+                        attackingPiece = blockingPiece = False
+                        if kingRow == r:
+                            if kingCol < c: #king is left of the pawn
+                                #inside between king and pawn; outside range between pawn border
+                                insideRange = range(kingCol + 1, c-1)
+                                outsideRange = range(c+1, 8)
+                            else: #king right of the pawn
+                                insideRange = range(kingCol - 1, c, -1)
+                                outsideRange = range(c-2, -1, -1)
+                            for i in insideRange:
+                                if self.board[r][i] != "--": #some other piece beside enpassant pawn blocks
+                                    blockingPiece=True
+                            for i in outsideRange:
+                                square = self.board[r][i]
+                                if square[0] == 'b' and (square[1] == "R" or square[1] == "Q"): #attacking piece
+                                    attackingPiece=True
+                                elif square != "--":
+                                    blockingPiece=True
+                        if not attackingPiece or blockingPiece:
+                            moves.append(Move((r, c), (r-1, c-1), self.board, isEnpassantMove=True))
             if c+1 <= 7: #captures to the right
-                if self.board[r-1][c+1][0] == 'b': #enemy piece to capture
-                    if not piecePinned or pinDirection == (-1, 1):
+                if not piecePinned or pinDirection == (-1, 1):
+                    if self.board[r-1][c+1][0] == 'b': #enemy piece to capture
                         moves.append(Move((r, c), (r-1, c+1), self.board))
-                elif (r-1, c+1) == self.enpassantPossible:
-                    if not piecePinned or pinDirection == (-1, 1):
-                        moves.append(Move((r, c), (r-1, c+1), self.board, isEnpassantMove=True))
+                    if (r-1, c+1) == self.enpassantPossible:
+                        attackingPiece = blockingPiece = False
+                        if kingRow == r:
+                            if kingCol < c: #king is left of the pawn
+                                #inside between king and pawn; outside range between pawn border
+                                insideRange = range(kingCol + 1, c)
+                                outsideRange = range(c + 2, 8)
+                            else: #king right of the pawn
+                                insideRange = range(kingCol - 1, c + 1, -1)
+                                outsideRange = range(c - 1, -1, -1)
+                            for i in insideRange:
+                                if self.board[r][i] != "--": #some other piece beside enpassant pawn blocks
+                                    blockingPiece=True
+                            for i in outsideRange:
+                                square = self.board[r][i]
+                                if square[0] == 'b' and (square[1] == "R" or square[1] == "Q"): #attacking piece
+                                    attackingPiece=True
+                                elif square != "--":
+                                    blockingPiece=True
+                        if not attackingPiece or blockingPiece:
+                            moves.append(Move((r, c), (r-1, c+1), self.board, isEnpassantMove=True))
 
         else: #black pawn moves
+            kingRow, kingCol = self.blackKingLocation
             if self.board[r+1][c] == "--": #1 square pawn advance
                 if not piecePinned or pinDirection == (1, 0):
                     moves.append(Move((r, c), (r+1, c), self.board))
@@ -231,19 +269,55 @@ class GameState():
                         moves.append(Move((r, c), (r+2, c), self.board))
             # captures
             if c-1 >= 0: #captures to the left
-                if self.board[r+1][c-1][0] == 'w': #enemy piece to capture
-                    if not piecePinned or pinDirection == (1, -1):
+                if not piecePinned or pinDirection == (1, -1):
+                    if self.board[r+1][c-1][0] == 'w': #enemy piece to capture
                         moves.append(Move((r, c), (r+1, c-1), self.board))
-                elif (r+1, c-1) == self.enpassantPossible:
-                    if not piecePinned or pinDirection == (1, -1):
-                        moves.append(Move((r, c), (r+1, c-1), self.board, isEnpassantMove=True))
+                    if (r+1, c-1) == self.enpassantPossible:
+                        attackingPiece = blockingPiece = False
+                        if kingRow == r:
+                            if kingCol < c: #king is left of the pawn
+                                #inside between king and pawn; outside range between pawn border
+                                insideRange = range(kingCol + 1, c-1)
+                                outsideRange = range(c+1, 8)
+                            else: #king right of the pawn
+                                insideRange = range(kingCol - 1, c, -1)
+                                outsideRange = range(c-2, -1, -1)
+                            for i in insideRange:
+                                if self.board[r][i] != "--": #some other piece beside enpassant pawn blocks
+                                    blockingPiece=True
+                            for i in outsideRange:
+                                square = self.board[r][i]
+                                if square[0] == 'w' and (square[1] == "R" or square[1] == "Q"): #attacking piece
+                                    attackingPiece=True
+                                elif square != "--":
+                                    blockingPiece=True
+                        if not attackingPiece or blockingPiece:
+                            moves.append(Move((r, c), (r+1, c-1), self.board, isEnpassantMove=True))
             if c+1 <= 7: #captures to the right
-                if self.board[r+1][c+1][0] == 'w': #enemy piece to capture
-                    if not piecePinned or pinDirection == (1, 1):
+                if not piecePinned or pinDirection == (1, 1):
+                    if self.board[r+1][c+1][0] == 'w': #enemy piece to capture
                         moves.append(Move((r, c), (r+1, c+1), self.board))
-                elif (r+1, c+1) == self.enpassantPossible:
-                    if not piecePinned or pinDirection == (1, 1):
-                        moves.append(Move((r, c), (r+1, c+1), self.board, isEnpassantMove=True))
+                    if (r+1, c+1) == self.enpassantPossible:
+                        attackingPiece = blockingPiece = False
+                        if kingRow == r:
+                            if kingCol < c: #king is left of the pawn
+                                #inside between king and pawn; outside range between pawn border
+                                insideRange = range(kingCol + 1, c)
+                                outsideRange = range(c + 2, 8)
+                            else: #king right of the pawn
+                                insideRange = range(kingCol - 1, c + 1, -1)
+                                outsideRange = range(c - 1, -1, -1)
+                            for i in insideRange:
+                                if self.board[r][i] != "--": #some other piece beside enpassant pawn blocks
+                                    blockingPiece=True
+                            for i in outsideRange:
+                                square = self.board[r][i]
+                                if square[0] == 'w' and (square[1] == "R" or square[1] == "Q"): #attacking piece
+                                    attackingPiece=True
+                                elif square != "--":
+                                    blockingPiece=True
+                        if not attackingPiece or blockingPiece:
+                            moves.append(Move((r, c), (r+1, c+1), self.board, isEnpassantMove=True))
 
     ''' #165
     Get all the rook moves for the rook located at row, col and add these moves to the list
@@ -370,7 +444,6 @@ class GameState():
     def getCastleMoves(self, r, c, moves, allyColor): #359
         inCheck = self.squareUnderAttack(r, c, allyColor)
         if inCheck:
-            print("oof")
             return #can't castle whistle in check
         if (self.whiteToMove and self.whiteCastleKingside) or (not self.whiteToMove and self.blackCastleKingside):
             self.getKingsideCastleMoves(r, c, moves, allyColor)
