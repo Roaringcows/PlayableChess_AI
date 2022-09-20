@@ -57,8 +57,26 @@ blackPawnScores =  [[0, 0, 0, 0, 0, 0, 0, 0],
                 [8, 8, 8, 8, 8, 8, 8, 8],
                 [11, 11, 11, 11, 11, 11, 11, 11]]
 
+blackKingScores = [[6, 7, 6, 4, 4, 4, 7, 5],
+                [3, 4, 3, 3, 3, 3, 4, 3],
+                [2, 2, 2, 2, 2, 2, 2, 2],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 0, 0, 0, 0, 0, 0, 1],
+                [1, 0, 0, 0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 0, 0, 0, 0]]
 
-piecePositionScores = {"N": knightScores, "B":bishopScores, "Q": queenScores, "R": rookScores, "bp": blackPawnScores, "wp": whitePawnScores}
+whiteKingScores =  [[0, 0, 0, 0, 0, 0, 0, 0],
+                [1, 0, 0, 0, 0, 0, 0, 1],
+                [1, 0, 0, 0, 0, 0, 0, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [2, 2, 2, 2, 2, 2, 2, 2],
+                [3, 4, 3, 3, 3, 3, 4, 3],
+                [6, 7, 6, 3, 3, 6, 7, 6]]
+
+
+piecePositionScores = {"N": knightScores, "B":bishopScores, "Q": queenScores, "R": rookScores, "bp": blackPawnScores, "wp": whitePawnScores, "wK": whiteKingScores, "bK": blackKingScores}
 
 
 
@@ -212,11 +230,12 @@ def scoreBoard(gs):
             if square != "--":
                 #score it positionally
                 piecePositionScore = 0
-                if square[1] != "K": #no position table for king
-                    if square[1] == "p":
-                        piecePositionScore = piecePositionScores[square][row][col]
-                    else:
-                        piecePositionScore = piecePositionScores[square[1]][row][col]
+                if square[1] == "p":
+                    piecePositionScore = piecePositionScores[square][row][col]
+                elif square[1] == "K":
+                    piecePositionScore = piecePositionScores[square][row][col]
+                else:
+                    piecePositionScore = piecePositionScores[square[1]][row][col]
 
                 if square[0] == 'w':
                     score += pieceScore[square[1]] + piecePositionScore * .1
